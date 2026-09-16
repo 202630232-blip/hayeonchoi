@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 날씨 맞춤 코디 추천 룩북</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --accent-color: #4A90E2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+        }
+
+        /* 날씨 선택 버튼 */
+        .weather-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .weather-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .weather-btn .icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .weather-btn .label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .weather-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        .weather-btn.active {
+            background-color: #eaf2fd;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* 코디 추천 카드 */
+        .outfit-card {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: opacity 0.2s ease;
+        }
+
+        .outfit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #edf2f7;
+        }
+
+        .vibe-tag {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .item-box {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 14px;
+            border-radius: 12px;
+            background-color: #f8fafc;
+        }
+
+        .item-category {
+            font-weight: bold;
+            width: 50px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .color-dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            margin: 0 14px;
+            border: 1px solid rgba(0,0,0,0.15);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .item-detail {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .color-name {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* 팁 상자 */
+        .match-tip {
+            margin-top: 15px;
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #b45309;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* 다시 추천 버튼 */
+        .refresh-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-btn:hover {
+            background-color: #357abd;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌤️ 날씨별 상/하의 시밀러 코디</h1>
+        <p>오늘의 기온에 어울리는 다양한 상/하의 매칭을 확인해보세요.</p>
+    </header>
+
+    <!-- 날씨 선택 탭 -->
+    <div class="weather-selector">
+        <div class="weather-btn active" onclick="selectWeather('hot', this)">
+            <span class="icon">☀️</span>
+            <span class="label">더운 날 (28℃~)</span>
+        </div>
+        <div class="weather-btn" onclick="selectWeather('warm', this)">
+            <span class="icon">🌤️</span>
+            <span class="label">따뜻함 (20~27℃)</span>
+        </div>
+        <div class="weather-btn" onclick="selectWeather('cool', this)">
+            <span class="icon">🍂</span>
+            <span class="label">선선함 (10~19℃)</span>
+        </div>
+        <div class="weather-btn" onclick="selectWeather('cold', this)">
+            <span class="icon">❄️</span>
+            <span class="label">추운 날 (~9℃)</span>
+        </div>
+    </div>
+
+    <!-- Outfit 결과 영역 -->
+    <div class="outfit-card" id="outfit-card">
+        <div class="outfit-header">
+            <h3 id="temp-title">무더운 여름 날씨</h3>
+            <span class="vibe-tag" id="vibe-tag">청량 & 시원한 쿨룩</span>
+        </div>
+
+        <!-- 상의 추천 -->
+        <div class="item-box">
+            <div class="item-category">상의</div>
+            <div class="color-dot" id="top-color"></div>
+            <div class="item-detail">
+                <div class="item-name" id="top-name">-</div>
+                <div class="color-name" id="top-color-name">-</div>
+            </div>
+        </div>
+
+        <!-- 하의 추천 -->
+        <div class="item-box">
+            <div class="item-category">하의</div>
+            <div class="color-dot" id="bottom-color"></div>
+            <div class="item-detail">
+                <div class="item-name" id="bottom-name">-</div>
+                <div class="color-name" id="bottom-color-name">-</div>
+            </div>
+        </div>
+
+        <!-- 스타일 팁 -->
+        <div class="match-tip" id="match-tip">-</div>
+    </div>
+
+    <!-- 다른 코디 보기 버튼 -->
+    <button class="refresh-btn" onclick="renderOutfit()">
+        <span>🎲</span> 다른 코디 조합 보기
+    </button>
+</div>
+
+<script>
+    // 날씨별 다양하게 준비된 코디 데이터 (각 날씨마다 3개의 매칭 제공)
+    const outfitDatabase = {
+        hot: {
+            tempText: "무더운 여름 날씨 (28℃ 이상)",
+            options: [
+                {
+                    vibe: "🌿 청량 & 시원한 쿨룩",
+                    top: { name: "화이트 오버핏 린넨 반팔 셔츠", colorName: "화이트 (Pure White)", hex: "#FFFFFF" },
+                    bottom: { name: "연청 데님 버뮤다 팬츠", colorName: "라이트 블루 (Light Blue)", hex: "#A4C2E5" },
+                    tip: "💡 <strong>매치 팁:</strong> 화이트와 연청의 밝은 조화는 시각적으로 청량하고 시원한 느낌을 줍니다."
+                },
+                {
+                    vibe: "🌊 모던 린넨 캐주얼룩",
+                    top: { name: "네이비 카라 반팔 니트", colorName: "다크 네이비 (Dark Navy)", hex: "#1D2A44" },
+                    bottom: { name: "아이보리 린넨 와이드 팬츠", colorName: "크림/아이보리 (Cream)", hex: "#FDFBF7" },
+                    tip: "💡 <strong>매치 팁:</strong> 다크 네이비와 아이보리의 대조로 차분하면서도 깔끔한 인상을 연출할 수 있습니다."
+                },
+                {
+                    vibe: "🥑 내추럴 시티보이 룩",
+                    top: { name: "피그먼트 카키 그래픽 반팔티", colorName: "애쉬 카키 (Ash Khaki)", hex: "#7A8471" },
+                    bottom: { name: "베이지 밴딩 반바지", colorName: "라이트 베이지 (Light Beige)", hex: "#E6D7C3" },
+                    tip: "💡 <strong>매치 팁:</strong> 카키와 베이지의 아ース 톤(Earth Tone) 조합으로 편안하고 스포티한 룩을 완성하세요."
+                }
+            ]
+        },
+        warm: {
+            tempText: "포근하고 따뜻한 날씨 (20℃ ~ 27℃)",
+            options: [
+                {
+                    vibe: "☕ 소프트 톤온톤 룩",
+                    top: { name: "스카이블루 스트라이프 롱 셔츠", colorName: "스카이 블루 (Sky Blue)", hex: "#87CEEB" },
+                    bottom: { name: "크림 핀턱 슬랙스", colorName: "크림 (Cream)", hex: "#FDFBF7" },
+                    tip: "💡 <strong>매치 팁:</strong> 블루와 크림의 조합은 화사하고 산뜻하여 봄/초여름 날씨에 가장 어울립니다."
+                },
+                {
+                    vibe: "🌷 스포티 데일리 룩",
+                    top: { name: "오버핏 맨투맨 / 스웨트셔츠", colorName: "멜란지 그레이 (Melange Grey)", hex: "#D3D3D3" },
+                    bottom: { name: "중청 스트레이트 데님", colorName: "인디고 블루 (Indigo Blue)", hex: "#3B5998" },
+                    tip: "💡 <strong>매치 팁:</strong> 회색과 중청의 세련된 조합으로 호불호 없이 누구나 편하게 입기 좋은 꾸안꾸 스타일입니다."
+                },
+                {
+                    vibe: "🍁 댄디 세미포멀 룩",
+                    top: { name: "오픈카라 긴팔 셔츠", colorName: "소프트 모카 (Mocha Beige)", hex: "#C3A691" },
+                    bottom: { name: "블랙 슬림 와이드 팬츠", colorName: "매트 블랙 (Matt Black)", hex: "#222222" },
+                    tip: "💡 <strong>매치 팁:</strong> 모카 베이지 상의로 분위기를 내고 블랙 하의로 룩의 무게감을 잡아주는 조합입니다."
+                }
+            ]
+        },
+        cool: {
+            tempText: "쌀쌀하고 선선한 날씨 (10℃ ~ 19℃)",
+            options: [
+                {
+                    vibe: "🍂 클래식 가을 룩",
+                    top: { name: "차콜 오버핏 니트 / 가디건", colorName: "차콜 그레이 (Charcoal)", hex: "#36454F" },
+                    bottom: { name: "클래식 베이지 치노 팬츠", colorName: "클래식 베이지 (Beige)", hex: "#D2B48C" },
+                    tip: "💡 <strong>매치 팁:</strong> 묵직한 차콜과 따뜻한 베이지의 대비는 시크함과 부드러움을 동시에 전달합니다."
+                },
+                {
+                    vibe: "🧥 트렌디 웜 룩",
+                    top: { name: "올리브 그린 자켓 & 후드집업", colorName: "올리브 카키 (Olive Khaki)", hex: "#556B2F" },
+                    bottom: { name: "흑청 데님 와이드 팬츠", colorName: "블랙 데님 (Dark Grey Denim)", hex: "#3A3A3C" },
+                    tip: "💡 <strong>매치 팁:</strong> 카키와 흑청의 매치로 그러지하면서도 캐주얼한 스트릿 스타일을 연출해보세요."
+                },
+                {
+                    vibe: "🌾 미니멀 감성 룩",
+                    top: { name: "브라운 울 트래커 자켓", colorName: "딥 브라운 (Deep Brown)", hex: "#5C4033" },
+                    bottom: { name: "아이보리 코듀로이 팬츠", colorName: "아이보리 (Ivory)", hex: "#F5F5DC" },
+                    tip: "💡 <strong>매치 팁:</strong> 따뜻한 브라운과 골골이 코듀로이 소재의 아이보리 팬츠는 가을/초겨울에 잘 어울립니다."
+                }
+            ]
+        },
+        cold: {
+            tempText: "춥고 쌀쌀한 겨울 날씨 (9℃ 이하)",
+            options: [
+                {
+                    vibe: "❄️ 시크 윈터 모던 룩",
+                    top: { name: "블랙 숏 패딩 / 롱 코트", colorName: "매트 블랙 (Matt Black)", hex: "#1A1A1A" },
+                    bottom: { name: "딥 인디고 기모 데님", colorName: "진청 (Deep Indigo)", hex: "#1B2A47" },
+                    tip: "💡 <strong>매치 팁:</strong> 시크한 블랙과 딥한 인디고의 매치는 슬림하고 세련된 겨울 기본 스타일입니다."
+                },
+                {
+                    vibe: "🧸 포근한 웜톤 룩",
+                    top: { name: "아이보리 헤비 덤블 집업 / 푸퍼", colorName: "아이보리 (Cream White)", hex: "#FDFBF7" },
+                    bottom: { name: "브라운 와이드 골덴 팬츠", colorName: "애쉬 브라운 (Ash Brown)", hex: "#6E5244" },
+                    tip: "💡 <strong>매치 팁:</strong> 부드러운 아이보리와 따뜻한 브라운 컬러로 추운 날씨에도 따듯한 느낌을 줍니다."
+                },
+                {
+                    vibe: "🏙️ 도시적인 미니멀 룩",
+                    top: { name: "그레이 울 발마칸 코트", colorName: "헤더 그레이 (Heather Grey)", hex: "#8A8A8A" },
+                    bottom: { name: "블랙 기모 와이드 슬랙스", colorName: "올 블랙 (Black)", hex: "#111111" },
+                    tip: "💡 <strong>매치 팁:</strong> 모노톤(그레이&블랙) 조합으로 어떤 자리에서나 어울리는 단정하고 차분한 모던 코디입니다."
+                }
+            ]
+        }
+    };
+
+    let currentCategory = 'hot';
+    let lastIndices = { hot: -1, warm: -1, cool: -1, cold: -1 };
+
+    // 날씨 탭 변경 이벤트
+    function selectWeather(type, element) {
+        currentCategory = type;
+
+        const buttons = document.querySelectorAll('.weather-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+
+        renderOutfit();
+    }
+
+    // 추천 코디 출력 (이전과 다른 무작위 코디 선택)
+    function renderOutfit() {
+        const categoryData = outfitDatabase[currentCategory];
+        const options = categoryData.options;
+
+        // 이전에 추천되었던 인덱스와 다른 인덱스를 랜덤 선택
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * options.length);
+        } while (options.length > 1 && randomIndex === lastIndices[currentCategory]);
+
+        lastIndices[currentCategory] = randomIndex;
+        const selected = options[randomIndex];
+
+        // 애니메이션 효과
+        const card = document.getElementById('outfit-card');
+        card.style.opacity = 0;
+
+        setTimeout(() => {
+            document.getElementById('temp-title').innerText = categoryData.tempText;
+            document.getElementById('vibe-tag').innerText = selected.vibe;
+
+            // 상의
+            document.getElementById('top-name').innerText = selected.top.name;
+            document.getElementById('top-color-name').innerText = "색상: " + selected.top.colorName;
+            document.getElementById('top-color').style.backgroundColor = selected.top.hex;
+
+            // 하의
+            document.getElementById('bottom-name').innerText = selected.bottom.name;
+            document.getElementById('bottom-color-name').innerText = "색상: " + selected.bottom.colorName;
+            document.getElementById('bottom-color').style.backgroundColor = selected.bottom.hex;
+
+            // 팁
+            document.getElementById('match-tip').innerHTML = selected.tip;
+
+            card.style.opacity = 1;
+        }, 150);
+    }
+
+    // 초기 페이지 로딩 시 첫 추천 실행
+    window.onload = function() {
+        renderOutfit();
+    };
+</script>
+
+</body>
+</html>
